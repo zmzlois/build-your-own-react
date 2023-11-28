@@ -166,10 +166,42 @@ function performUnitOfWork(fiber) {
     }
 }
 
+let wipFiber = null
+let hookIndex = null
+
 function updateFunctionComponent(fiber) {
+
+    wipFiber = fiber;
+    hookIndex = 0;
+    wipFiber.hooks = [];
     const children = [fiber.type(fiber.props)];
     reconcileChildren(fiber, children)
     
+}
+
+function useState(initial) {
+    const oldHook = wipFiber.alternate && wipFiber.alternate.hooks && wipFiber.alternate.hooks[hookIndex]
+
+    const hook = {
+        state: oldHook ? oldHook.state : initial,
+        queue: [],
+    }
+    
+    const setState = action => {
+        hook.queue.push(action)
+        wipRoot = {
+            dom: currentRoot.dom,
+            props: currentRoot.props,
+            alternate: currentRoot,
+        }
+        nextUnitOfWork = wipRoot
+        deletions = []
+    }
+    
+    wipFiber.hooks.push(hook)
+    hookIndex++
+
+    return [hook.state, setState]
 }
 
 function updateHostComponent(fiber) {
@@ -241,35 +273,22 @@ function reconcileChildren(wipFiber, elements) {
 const Didact = {
     createElement,
     render,
+    useState,
 }
 
-const element = Didact.createElement(
-    "div",
-    { id: "foo" },
-    Didact.createElement("a", null, "bar"),
-    Didact.createElement("h1", null, "H1 title"),
-    Didact.createElement("b")
-)
 
-// const element = {
-//     type: "h1",
-//     props: {
-//         title: "foo",
-//         children: "Hello"
-//     }
-// }
+function Counter() {
+    const [state, setState] = Didact.useState(1)
+    return (
+        <h1 onClick={() => setState(c => c + 1)}>Count: {state}</h1>
+    )
+}
+const element = <Counter/>
 
 const container = document.getElementById("root");
 Didact.render(element, container)
 
-// const node = document.createElement(element.type)
-// node["title"] = element.props.title;
 
-// const text = document.createTextNode("")
-// text["nodeValue"] = element.props.children;
-
-// node.appendChild(text);
-// container.appendChild(node)
 
 function createElement(type, props, ...children) {
     console.log(`type: ${type}, props: ${props}, children: ${children}`)
