@@ -44,6 +44,7 @@ function render(element, container) {
 }
 
 let nextUnitOfWork = null;
+let currentRoot = null;
 let wipRoot = null;
 
 function workLoop(deadline) {
@@ -52,6 +53,9 @@ function workLoop(deadline) {
         nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
 
         shouldYield = deadline.timeRemaining() < 1;
+    }
+    if (!nextUnitOfWork && wipRoot) {
+        commitRoot()
     }
 
     requestIdleCallback(workLoop);
@@ -68,26 +72,8 @@ function performUnitOfWork(nextUnitOfWork) {
     }
     //  create new fibers
     const elements = fiber.props.children;
-    let index = 0;
-    let prevSibling = null;
-
-    while (index < elements.length) {
-        const element = elements[index];
-
-        const newFiber = {
-            type: element.type,
-            props: element.props, 
-            parent: fiber,
-            dom: null,
-        }
-        if (index === 0) {
-            fiber.child = newFiber;
-        } else {
-            prevSibling.sibling = newFiber;
-        }
-        prevSibiling = newFiber;
-        index++;
-    }
+    reconcileChildren(fiber, elements)
+ 
     
     // search for next unit of work, first try with child, then sibling, then with uncle
     if (fiber.child) {
@@ -99,6 +85,47 @@ function performUnitOfWork(nextUnitOfWork) {
             return nextFiber.sibling;
         }
         nextFiber = nextFiber.parent;
+    }
+}
+
+function reconcileChildren(wipFiber, elements) {
+    let index = 0;
+    let oldFiber = wipFiber.alternate && wipFiber.alternate.child;
+    let prevSibling = null;
+
+    while (index < elements.length || oldFiber != null) {
+        const element = elements[index];
+
+        let newFiber = null;
+
+        // compare oldFiber to element
+        const sameType = oldFiber && element && element.type == oldFiber.type;
+
+        if (sameType) {
+            //TODO if they are the same type, update the node
+            
+        }
+        if (element && !sameType) {
+            //TODO if element exists, but they are not the same type, add this node
+        }
+
+        if (oldFiber && !sameType) {
+            //TODO delete the oldFiber's node
+        }
+
+        // const newFiber = {
+        //     type: element.type,
+        //     props: element.props, 
+        //     parent: fiber,
+        //     dom: null,
+        // }
+        if (index === 0) {
+            fiber.child = newFiber;
+        } else {
+            prevSibling.sibling = newFiber;
+        }
+        prevSibiling = newFiber;
+        index++;
     }
 }
 
