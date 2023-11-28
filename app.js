@@ -22,6 +22,14 @@ function updateDom(dom, prevProps, nextProps) {
         .filter(isGone(prevProps, nextProps))
         .forEach(name => {
             dom[name] = "";
+        })
+    
+    // set new or changed properties
+    Object.keys(nextProps)
+        .filter(isProperty)
+        .filter(isNew(prevProps, nextProps))
+        .forEach(name => {
+        dom[name] = nextProps[name]
     })
 }
 
