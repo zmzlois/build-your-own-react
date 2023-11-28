@@ -37,17 +37,47 @@ function workLoop(deadline) {
 
 function performUnitOfWork(nextUnitOfWork) {
 
-    // TODO add dom node
+    // add dom node
      if (!fiber.dom) {
         fiber.dom = createDom(fiber)
      }
     if (fiber.parent) {
         fiber.parent.dom.appendChild(fiber.dom)
     }
-    // TODO create new fibers
+    //  create new fibers
+    const elements = fiber.props.children;
+    let index = 0;
+    let prevSibling = null;
+
+    while (index < elements.length) {
+        const element = elements[index];
+
+        const newFiber = {
+            type: element.type,
+            props: element.props, 
+            parent: fiber,
+            dom: null,
+        }
+        if (index === 0) {
+            fiber.child = newFiber;
+        } else {
+            prevSibling.sibling = newFiber;
+        }
+        prevSibiling = newFiber;
+        index++;
+    }
     
-    
-    // TODO return next unit of work
+    // search for next unit of work, first try with child, then sibling, then with uncle
+    if (fiber.child) {
+        return fiber.child;
+    }
+    let nextFiber = fiber;
+    while (nextFiber) {
+        if (nextFiber.sibling) {
+            return nextFiber.sibling;
+        }
+        nextFiber = nextFiber.parent;
+    }
 }
 
 const Didact = {
