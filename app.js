@@ -1,13 +1,29 @@
-const element = {
-    type: "h1",
-    props: {
-        title: "foo",
-        children: "Hello"
-    }
+function render(element, container) {
+    //TODO create dom nodes
 }
 
+const Didact = {
+    createElement,
+    render,
+}
+
+const element = Didact.createElement(
+    "div",
+    { id: "foo" },
+    Didact.createElement("a", null, "bar"),
+    Didact.createElement("b")
+)
+
+// const element = {
+//     type: "h1",
+//     props: {
+//         title: "foo",
+//         children: "Hello"
+//     }
+// }
+
 const container = document.getElementById("root");
-console.log(container)
+Didact.render(element, container)
 
 const node = document.createElement(element.type)
 node["title"] = element.props.title;
@@ -19,6 +35,7 @@ node.appendChild(text);
 container.appendChild(node)
 
 function createElement(type, props, ...children) {
+    console.log(`type: ${type}, props: ${props}, children: ${children}`)
     return {
         type,
         props: {
