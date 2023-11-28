@@ -1,5 +1,10 @@
 function render(element, container) {
-    const dom = document.createElement(element.type);
+    const dom = element.type == "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(element.type)
+
+    const isProperty = key => key !== "children"
+    Object.keys(element.props).filter(isProperty).forEach(name => {
+        dom[name] = element.props[name]
+    })
 
     element.props.children.forEach(child => render(child, dom))
 
@@ -29,14 +34,14 @@ const element = Didact.createElement(
 const container = document.getElementById("root");
 Didact.render(element, container)
 
-const node = document.createElement(element.type)
-node["title"] = element.props.title;
+// const node = document.createElement(element.type)
+// node["title"] = element.props.title;
 
-const text = document.createTextNode("")
-text["nodeValue"] = element.props.children;
+// const text = document.createTextNode("")
+// text["nodeValue"] = element.props.children;
 
-node.appendChild(text);
-container.appendChild(node)
+// node.appendChild(text);
+// container.appendChild(node)
 
 function createElement(type, props, ...children) {
     console.log(`type: ${type}, props: ${props}, children: ${children}`)
