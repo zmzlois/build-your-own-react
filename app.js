@@ -65,7 +65,13 @@ function commitWork(fiber) {
         return;
     }
 
-    const domParent = fiber.parent.dom;
+    // find the parent of a dom node we'll need to go up the fiber tree until we find a fiber with a DOM node
+    let domParentFiber = fiber.parent;
+    while (!domParentFiber.dom) {
+        domParentFiber = domParentFiber.parent;
+    }
+    const domParent = domParentFiber.dom
+
 
     if (fiber.effectTag === "PLACEMENT" && fiber.dom != null) {
         domParent.appendChild(fiber.dom)
@@ -77,12 +83,22 @@ function commitWork(fiber) {
         )
 
     } else if (fiber.effectTag === "DELETION") {
-        domParent.removeChild(fiber.dom)
+        commitDeletion(fiber, domParent)
     }
 
     domParent.appendChild(fiber.dom);
+
     commitWork(fiber.child);
     commitWork(fiber.sibling);
+}
+
+// keep deleting in the whole fiber
+function commitDeletion(fiber, domParent) {
+    if (fiber.dom) {
+        domParent.removeChild(fiber.dom)
+    } else {
+        commitDeletion(fiber.child, domParent)
+    }
 }
 
 
@@ -151,6 +167,8 @@ function performUnitOfWork(fiber) {
 }
 
 function updateFunctionComponent(fiber) {
+    const children = [fiber.type(fiber.props)];
+    reconcileChildren(fiber, children)
     
 }
 
