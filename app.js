@@ -117,7 +117,13 @@ function workLoop(deadline) {
     requestIdleCallback(workLoop);
 }
 
-function performUnitOfWork(nextUnitOfWork) {
+function performUnitOfWork(fiber) {
+    const isFunctionComponent = fiber.type instanceof Function;
+    if (isFunctionComponent) {
+        updateFunctionComponent(fiber);
+    } else {
+        updateHostComponent(fiber)
+    }
 
     // add dom node
      if (!fiber.dom) {
@@ -142,6 +148,17 @@ function performUnitOfWork(nextUnitOfWork) {
         }
         nextFiber = nextFiber.parent;
     }
+}
+
+function updateFunctionComponent(fiber) {
+    
+}
+
+function updateHostComponent(fiber) {
+    if (!fiber.dom) {
+        fiber.dom = createDom(fiber)
+    }
+    reconcileChildren(fiber, fiber.props.children)
 }
 
 function reconcileChildren(wipFiber, elements) {
