@@ -1,3 +1,5 @@
+// something is very wrong with this code, it is not working as expected
+
 function createDom(fiber) {
      const dom = element.type == "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(element.type)
 
