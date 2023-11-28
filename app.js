@@ -1,5 +1,9 @@
 function render(element, container) {
-    //TODO create dom nodes
+    const dom = document.createElement(element.type);
+
+    element.props.children.forEach(child => render(child, dom))
+
+    container.appendChild(dom);
 }
 
 const Didact = {
