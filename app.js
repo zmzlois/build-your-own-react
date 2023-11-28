@@ -13,6 +13,29 @@ const isNew = (prev, next) => key => prev[key] !== next[key]
 const isGone = (prev, next) => key => !(key in next)
 
 function updateDom(dom, prevProps, nextProps) {
+
+    // if event handler change remove it from the node
+    Object.keys(prevProps)
+        .filter(isEvent)
+        .filter(key => !(key in nextProps) || isNew(prevProps, nextProps)(key))
+        .forEach(name => {
+            const eventType = name
+                .toLowerCase()
+                .substring(2)
+            dom.removeEventListener(eventType, prevProps[name])
+        })
+    
+    // add new event handler if there is any
+    Object.keys(nextProps)
+        .filter(isEvent)
+        .filter(isNew(prevProps, nextProps))
+        .forEach(name => {
+            const eventType = name
+                .toLowerCase()
+                .substring(2)
+            dom.addEventListener(eventType, nextProps[name])
+    })
+    
     // remove old properties
     Object.keys(prevProps)
         .filter(isProperty)
