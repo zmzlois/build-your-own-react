@@ -1,17 +1,14 @@
 function createDom(fiber) {
      const dom = element.type == "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(element.type)
 
-    const isProperty = key => key !== "children"
-    Object.keys(element.props).filter(isProperty).forEach(name => {
-        dom[name] = element.props[name]
-    })
+    updateDom(dom, {}, fiber.props)
 
-    
     return dom;
     
 }
 
-const isProperty = key => key !== "children";
+const isEvent = key => key.startsWith("on")
+const isProperty = key => key !== "children" && !isEvent(key);
 const isNew = (prev, next) => key => prev[key] !== next[key]
 const isGone = (prev, next) => key => !(key in next)
 
