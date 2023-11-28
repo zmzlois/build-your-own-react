@@ -6,6 +6,7 @@ function render(element, container) {
         dom[name] = element.props[name]
     })
 
+    // problem: this will create a recursive call, which will block the main thread
     element.props.children.forEach(child => render(child, dom))
 
     container.appendChild(dom);
@@ -20,6 +21,7 @@ const element = Didact.createElement(
     "div",
     { id: "foo" },
     Didact.createElement("a", null, "bar"),
+    Didact.createElement("h1", null, "H1 title"),
     Didact.createElement("b")
 )
 
