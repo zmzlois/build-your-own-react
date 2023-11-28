@@ -186,6 +186,12 @@ function useState(initial) {
         state: oldHook ? oldHook.state : initial,
         queue: [],
     }
+
+    const actions = oldHook ? oldHook.queue : []
+
+    actions.forEach(action => {
+        hook.state = action(hook.state)
+    })
     
     const setState = action => {
         hook.queue.push(action)
