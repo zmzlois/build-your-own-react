@@ -1,15 +1,25 @@
+function createDom(fiber) {
+    
+}
+
 function render(element, container) {
-    const dom = element.type == "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(element.type)
+    nextUnitOfWork = {
+        dom: container, 
+        props: {
+            children: [element],
+        }
+    }
+    // const dom = element.type == "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(element.type)
 
-    const isProperty = key => key !== "children"
-    Object.keys(element.props).filter(isProperty).forEach(name => {
-        dom[name] = element.props[name]
-    })
+    // const isProperty = key => key !== "children"
+    // Object.keys(element.props).filter(isProperty).forEach(name => {
+    //     dom[name] = element.props[name]
+    // })
 
-    // problem: this will create a recursive call, which will block the main thread
-    element.props.children.forEach(child => render(child, dom))
+    // // problem: this will create a recursive call, which will block the main thread
+    // element.props.children.forEach(child => render(child, dom))
 
-    container.appendChild(dom);
+    // container.appendChild(dom);
 }
 
 let nextUnitOfWork = null;
@@ -26,7 +36,18 @@ function workLoop(deadline) {
 }
 
 function performUnitOfWork(nextUnitOfWork) {
-    // TODO
+
+    // TODO add dom node
+     if (!fiber.dom) {
+        fiber.dom = createDom(fiber)
+     }
+    if (fiber.parent) {
+        fiber.parent.dom.appendChild(fiber.dom)
+    }
+    // TODO create new fibers
+    
+    
+    // TODO return next unit of work
 }
 
 const Didact = {
