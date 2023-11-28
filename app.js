@@ -1,6 +1,35 @@
 function createDom(fiber) {
+     const dom = element.type == "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(element.type)
+
+    const isProperty = key => key !== "children"
+    Object.keys(element.props).filter(isProperty).forEach(name => {
+        dom[name] = element.props[name]
+    })
+
+    // problem: this will create a recursive call, which will block the main thread
+    element.props.children.forEach(child => render(child, dom))
+
+    container.appendChild(dom);
+    return dom;
     
 }
+
+function commitRoot() {
+    commitWork(wipRoot.child)
+    wipRoot = null;
+}
+
+function commitWork(fiber) {
+    if (!fiber) {
+        return;
+    }
+
+    const domParent = fiber.parent.dom;
+    domParent.appendChild(fiber.dom);
+    commitWork(fiber.child);
+    commitWork(fiber.sibling);
+}
+
 
 function render(element, container) {
     nextUnitOfWork = {
@@ -9,17 +38,7 @@ function render(element, container) {
             children: [element],
         }
     }
-    // const dom = element.type == "TEXT_ELEMENT" ? document.createTextNode("") : document.createElement(element.type)
-
-    // const isProperty = key => key !== "children"
-    // Object.keys(element.props).filter(isProperty).forEach(name => {
-    //     dom[name] = element.props[name]
-    // })
-
-    // // problem: this will create a recursive call, which will block the main thread
-    // element.props.children.forEach(child => render(child, dom))
-
-    // container.appendChild(dom);
+   
 }
 
 let nextUnitOfWork = null;
