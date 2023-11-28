@@ -6,15 +6,13 @@ function createDom(fiber) {
         dom[name] = element.props[name]
     })
 
-    // problem: this will create a recursive call, which will block the main thread
-    element.props.children.forEach(child => render(child, dom))
-
-    container.appendChild(dom);
+    
     return dom;
     
 }
 
 function commitRoot() {
+    deletions.forEach(commitWork)
     commitWork(wipRoot.child)
     currentRoot = wipRoot;
     wipRoot = null;
@@ -26,6 +24,20 @@ function commitWork(fiber) {
     }
 
     const domParent = fiber.parent.dom;
+
+    if (fiber.effectTag === "PLACEMENT" && fiber.dom != null) {
+        domParent.appendChild(fiber.dom)
+    } else if (fiber.effectTag === "UPDATE" && fiber.dom != null) {
+        updateDom(
+            fiber.dom,
+            fiber.alternate.props,
+            fiber.props,
+        )
+
+    } else if (fiber.effectTag === "DELETION") {
+        domParent.removeChild(fiber.dom)
+    }
+
     domParent.appendChild(fiber.dom);
     commitWork(fiber.child);
     commitWork(fiber.sibling);
@@ -37,15 +49,17 @@ function render(element, container) {
         dom: container, 
         props: {
             children: [element],
-        }
+        },
+        alternate: currentRoot,
     }
-    alternate: currentRoot;
+    deletions = []
    
 }
 
 let nextUnitOfWork = null;
 let currentRoot = null;
 let wipRoot = null;
+let deletions = null;
 
 function workLoop(deadline) {
     let shouldYield = false;
@@ -102,15 +116,33 @@ function reconcileChildren(wipFiber, elements) {
         const sameType = oldFiber && element && element.type == oldFiber.type;
 
         if (sameType) {
-            //TODO if they are the same type, update the node
+            // if they are the same type, update the node with newFiber
+            newFiber = {
+                type: oldFiber.type,
+                props: element.props,
+                dom: oldFiber.dom,
+                parent: wipFiber,
+                alternate: oldFiber,
+                effectTag: "UPDATE"
+            }
             
         }
         if (element && !sameType) {
-            //TODO if element exists, but they are not the same type, add this node
+            // if element exists, but they are not the same type, add this node
+            newFiber = {
+                type: element.type,
+                props: element.props,
+                dom: null,
+                parent: wipFiber,
+                alternate: null,
+                effectTag: "PLACEMENT",
+            }
         }
 
         if (oldFiber && !sameType) {
-            //TODO delete the oldFiber's node
+            //TODO if types are different, and it is an oldFiber, we delete the oldFiber's node
+            oldFiber.effectTag = "DELETION";
+            deletions.push(oldFiber)
         }
 
         // const newFiber = {
